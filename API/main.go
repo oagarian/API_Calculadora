@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"fmt"
 	"mux"
+	"encoding/json"
 )
 
 func calculo(w http.ResponseWriter, req *http.Request ){
@@ -24,10 +25,10 @@ func calculo(w http.ResponseWriter, req *http.Request ){
 	}
 
 	var result float64
+	
 	switch calc {
 		case "soma": 
 			result = number_one + number_two
-			
 		case "subtracao": 
 			result = number_one - number_two
 		case "divisao": 
@@ -38,7 +39,11 @@ func calculo(w http.ResponseWriter, req *http.Request ){
 	
 	var float_to_int int = int(result)
 	int_to_string := strconv.Itoa(float_to_int)
-	fmt.Fprintf(w, "%s", int_to_string)
+
+	w.Header().Add("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+        "result": fmt.Sprintf("%s", int_to_string),
+    })
 	
 
 }
