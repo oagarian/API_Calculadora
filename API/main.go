@@ -1,56 +1,111 @@
 package main
 
 import (
-	"log"
-	"net/http"
-	"strconv"
-	"fmt"
-	"mux"
-	"encoding/json"
+  "github.com/gofiber/fiber/v2"
+  "strconv"
+  "log"
+  "fmt"
+  "encoding/json"
 )
 
-func calculo(w http.ResponseWriter, req *http.Request ){
-	vars := mux.Vars(req)
-	calc := vars["param"]
-	n1 := vars["n1"]
-	n2 := vars["n2"]
+//Handler inicial informativo
+func handler(c *fiber.Ctx) error {
+  fmt.Fprint(c, "API Canculadora \n Use: \n /soma/{n1}/{n2} \n /subtracao/{n1}/{n2} \n /divisao/{n1}/{n2} \n /multiplicacao/{n1}/{n2}")
+  return nil
+}
 
-	number_one, error1 := strconv.ParseFloat(n1, 64)
-	if error1 != nil {
-		log.Fatal(error1)
-	}
-	number_two, error2 := strconv.ParseFloat(n2, 64)
-	if error2 != nil {
-		log.Fatal(error2)
-	}
+//Função de soma
+func soma(c *fiber.Ctx) error {
+  number_one := c.Params("n1")
+  number_two := c.Params("n2")
 
-	var result float64
-	
-	switch calc {
-		case "soma": 
-			result = number_one + number_two
-		case "subtracao": 
-			result = number_one - number_two
-		case "divisao": 
-			result = number_one / number_two
-		case "multiplicacao": 
-			result = number_one * number_two
-	}	
-	
-	var float_to_int int = int(result)
-	int_to_string := strconv.Itoa(float_to_int)
+  n1, err := strconv.Atoi(number_one)
+  n2, err := strconv.Atoi(number_two)
 
-	w.Header().Add("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
-        "result": fmt.Sprintf("%s", int_to_string),
-    })
-	
+  if err != nil {
+    log.Fatal(err)
+  }
 
+  result := n1 + n2
+  result_string := strconv.Itoa(result)
+  json.NewEncoder(c).Encode(map[string]string{
+    "result": fmt.Sprintf("%s", result_string),
+    })  
+  return nil
+}
+
+//Função de subtração
+func subtracao(c *fiber.Ctx) error {
+  number_one := c.Params("n1")
+  number_two := c.Params("n2")
+
+  n1, err := strconv.Atoi(number_one)
+  n2, err := strconv.Atoi(number_two)
+
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  result := n1 - n2
+  result_string := strconv.Itoa(result)
+  json.NewEncoder(c).Encode(map[string]string{
+    "result": fmt.Sprintf("%s", result_string),
+    }) 
+  return nil
+}
+
+//Função de divisão
+func divisao(c *fiber.Ctx) error {
+  number_one := c.Params("n1")
+  number_two := c.Params("n2")
+
+  n1, err := strconv.Atoi(number_one)
+  n2, err := strconv.Atoi(number_two)
+
+  if err != nil {
+    log.Fatal(err)
+  }
+  if n2 != 0 {
+    result := n1 / n2
+    result_string := strconv.Itoa(result)
+    json.NewEncoder(c).Encode(map[string]string{
+    "result": fmt.Sprintf("%s", result_string),
+    }) 
+    
+  } else {
+    fmt.Fprintf(c, "Infinito")
+  }
+  return nil
 }
 
 
-func main(){
-	rout := mux.NewRouter()
-	rout.HandleFunc("/{param}/{n1}/{n2}/", calculo).Methods("GET")
-	http.ListenAndServe(":8080", rout)
+//Função de multiplicação
+func multiplicacao(c *fiber.Ctx) error {
+  number_one := c.Params("n1")
+  number_two := c.Params("n2")
+
+  n1, err := strconv.Atoi(number_one)
+  n2, err := strconv.Atoi(number_two)
+
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  result := n1 * n2
+  result_string := strconv.Itoa(result)
+  json.NewEncoder(c).Encode(map[string]string{
+    "result": fmt.Sprintf("%s", result_string),
+    }) 
+  return nil
+}
+
+//Função principal
+func main() {
+    app := fiber.New()
+    app.Get("/", handler)
+    app.Get("/soma/:n1/:n2", soma)  
+    app.Get("/subtracao/:n1/:n2", subtracao) 
+    app.Get("/divisao/:n1/:n2", divisao) 
+    app.Get("/multiplicacao/:n1/:n2", multiplicacao) 
+    app.Listen(":8080")
 }
